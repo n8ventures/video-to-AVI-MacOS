@@ -1,0 +1,11 @@
+tk==0.1.0
+tkinterdnd2-universal==1.7.3
+tqdm==4.66.2
+PyMonCtl==0.7
+pywin32-ctypes==0.2.2
+PyWinBox==0.6
+PyWinCtl==0.3
+setuptools==69.5.1
+tkmacosx==1.0.5
+py2app==0.28.7
+dmgbuild==1.6.1
