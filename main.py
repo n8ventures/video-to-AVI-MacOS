@@ -25,19 +25,13 @@ def is_running_from_bundle():
 
     return False
 
-ffprobe = 'ffprobe'
-ffplay = 'ffplay'
 ffmpeg = 'ffmpeg'
 
 bundle_path = is_running_from_bundle()
 if bundle_path:
-    ffprobe = os.path.join(bundle_path, ffprobe)
-    ffplay = os.path.join(bundle_path, ffplay)
     ffmpeg = os.path.join(bundle_path, ffmpeg)
 else:
     MacOSbin = './bin/'
-    ffprobe = os.path.join(MacOSbin, ffprobe)
-    ffplay = os.path.join(MacOSbin, ffplay)
     ffmpeg = os.path.join(MacOSbin, ffmpeg)
     
 
@@ -158,6 +152,8 @@ def center_window(window, width, height):
 
 
 # Loading functions
+loading_screen = None
+
 def loading():
     if loading_event.is_set():
         global loading_screen
@@ -250,25 +246,28 @@ def save_video(file_path):
             output_folder = os.path.abspath(output_file.name)
             output_dir = os.path.dirname(output_file.name)
 
-            loading_thread()
+            loading_thread_switch(True)
             VidToAVI(file_path, output_folder)
             loading_thread_switch(False)
 
             print("Conversion complete!")
+            root.deiconify()
             openOutputFolder(output_dir, output_folder)
     elif file_path == '':
+        root.deiconify()
         print('No video File dropped.')
     else:
         notavideo()
 
 def choose_file():
     global file_path
+    root.withdraw()
     file_path = filedialog.askopenfilename(
         title="Select Video File",
         filetypes=(("Video files", "*" + " *".join(video_extensions)), ("All files", "*.*"))
     )
-    save_video(file_path)
     
+    threading.Thread(target= save_video, args=(file_path, ), daemon=True).start()
 
 # Main function
 def VidToAVI(file_path, output_path):
@@ -284,7 +283,6 @@ def VidToAVI(file_path, output_path):
     print('converting to AVI...')
     print('File path: ', file_path)
     print('Output path: ', output_path)
-    print('cmd: ', cmd)
     subprocess.run(cmd)
 
 # main root
@@ -310,7 +308,8 @@ def on_drop(event):
     drop_label.config
     label.config
     file_path = event.data.strip('{}')
-    threading.Thread(target=save_video, args=(file_path, )).start()
+    root.withdraw()
+    save_video(file_path)
 
 if any(char.isalpha() for char in __version__):
     root.title(f"N8's Video to AVI Early Access {__version__}")
@@ -365,12 +364,6 @@ label.image = resized_image
 label.place(x=geo_width / 2, y=imgYPos, anchor=tk.CENTER)
 
 def on_closing():
-    if os.path.exists('temp'):
-        shutil.rmtree('temp')
-        print("temp removed successfully.")
-    else:
-        print("temp does not exist.")
-        
     print("Closing the application.")
     
     atexit.unregister(on_closing)  # Unregister the atexit callback
