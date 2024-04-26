@@ -2,6 +2,7 @@ from __version__ import __version__, __ffmpeg__
 import tkinter as tk
 from tkinter import filedialog, ttk, PhotoImage
 from tkinterdnd2 import TkinterDnD, DND_FILES
+from PIL import Image, ImageTk, ImageSequence
 import os
 import sys
 import platform
@@ -149,8 +150,6 @@ def center_window(window, width, height):
     y_position = (screen_height - window_height) // 2  
     window.geometry(f"{window_width}x{window_height}+{x_position}+{y_position-35}")
 
-
-
 # Loading functions
 loading_screen = None
 
@@ -194,10 +193,7 @@ def is_video_file(file_path):
 
 def is_folder_open(path):
     folder_name = os.path.basename(path)
-    if platform.system() == 'Windows':
-        open_folders = subprocess.check_output('tasklist /v /fi "imagename eq explorer.exe"', shell=True).decode('utf-8')
-        return folder_name in open_folders
-    elif platform.system() == 'Darwin':  # macOS
+    if platform.system() == 'Darwin':  # macOS
         # Use AppleScript to check if Finder window is open with the specified folder
         script = f'''
             tell application "System Events"
@@ -208,7 +204,7 @@ def is_folder_open(path):
             else
                 return false
             end if
-        '''
+        ''' 
         open_windows = subprocess.check_output(['osascript', '-e', script]).decode('utf-8').strip()
         return open_windows == 'true'
     else:
@@ -227,10 +223,7 @@ def openOutputFolder(path, path2):
         subprocess.run(['open', '-R', path2])
     else:
         print('window found!')
-        # macOS does not support window manipulation like Windows, so just reveal the file in Finder
         subprocess.run(['open', '-R', path2])
-
-video_data = None
 
 def save_video(file_path):
     print(f"File: {file_path}")
@@ -253,6 +246,8 @@ def save_video(file_path):
             print("Conversion complete!")
             root.deiconify()
             openOutputFolder(output_dir, output_folder)
+        else:
+            root.deiconify()
     elif file_path == '':
         root.deiconify()
         print('No video File dropped.')
@@ -291,77 +286,122 @@ if bundle_path:
     icon =  PhotoImage(file=os.path.join(bundle_path, 'ico.png'))
 else:
     icon = PhotoImage(file='./ico/ico.png')
-
-def on_configure(event):
-    canvas.configure(scrollregion=canvas.bbox("all"))
     
-def drag_enter(event):
-    drop_label.config
-    label.config
+root.withdraw()
 
-def drag_leave(event):
-    drop_label.config
-    label.config
-    
-def on_drop(event):
-    global file_path
-    drop_label.config
-    label.config
-    file_path = event.data.strip('{}')
-    root.withdraw()
-    save_video(file_path)
+splash_screen = tk.Toplevel(root)
+splash_screen.overrideredirect(1) 
+splash_screen.attributes('-topmost', True)  # Keep the window on top
+splash_screen.attributes("-transparent", "true")
+splash_geo_x = 350
+splash_geo_y = 550
+center_window(splash_screen, splash_geo_x, splash_geo_y)
 
-if any(char.isalpha() for char in __version__):
-    root.title(f"N8's Video to AVI Early Access {__version__}")
-    
-else:
-    root.title(f"N8's Video to AVI {__version__}")
 
-geo_width= 400
-center_window(root, geo_width, 300)
-root.iconphoto(True, icon)
-root.wm_iconbitmap('icon.icns')
-make_non_resizable(root)
-watermark_label(root)
 
-# Create a Canvas with a grey broken-line border - doesnt work lol
-canvas = tk.Canvas(root, bd=2)
-canvas.pack(expand=True, fill="both")
 
-# Create a button to choose a file
-choose_button = Button(canvas, text="Choose Video File", command=choose_file)
-choose_button.pack(side=tk.TOP, pady=50)
-
-# Create a Label for the drop area
-drop_label = tk.Label(canvas, text="Or Drag and Drop Video File Here")
-drop_label.pack() 
-
-# Bind the drop event to the on_drop function
-drop_label.bind("<Enter>", drag_enter)
-drop_label.bind("<Leave>", drag_leave)
-drop_label.drop_target_register(DND_FILES)
-drop_label.dnd_bind('<<Drop>>', on_drop)
-canvas.bind("<Enter>", drag_enter)
-canvas.bind("<Leave>", drag_leave)
-canvas.dnd_bind('<<Drop>>', on_drop)
-canvas.drop_target_register(DND_FILES)
-
-print("Current working directory:", os.getcwd())
-print("Executable path:", sys.executable)
-
-# logo on drop event area
-DnDLogo = 'icon_256x256.png' 
+gif_path = 'splash.gif'
 if bundle_path:
-    DnDLogo = os.path.join(bundle_path, DnDLogo)
+    gif_path = os.path.join(bundle_path, gif_path)
 else:
-    DnDLogo = './ico/icon_256x256.png'
-imgYPos = 250
+    gif_path = './splash/splash.gif'
 
-image = tk.PhotoImage(file=DnDLogo)
-resized_image = image.subsample(2)
-label = tk.Label(canvas, image=resized_image, bd=0)
-label.image = resized_image
-label.place(x=geo_width / 2, y=imgYPos, anchor=tk.CENTER)
+
+gif_img = Image.open(gif_path)
+gif_frames_rgba = [frame.convert("RGBA") for frame in ImageSequence.Iterator(gif_img)]
+
+splash_label = tk.Label(splash_screen, bg='white')
+splash_label.pack()
+
+# Function to animate GIF frames
+def animate(frame_num, loop):
+    frame = gif_frames_rgba[frame_num]
+    photo = ImageTk.PhotoImage(frame)
+    splash_label.config(image=photo, bg='white')
+    splash_label.image = photo
+    
+    if loop:
+        frame_num = (frame_num + 1) % len(gif_frames_rgba)
+        splash_screen.after(25, animate, frame_num, True)
+    elif frame_num < len(gif_frames_rgba) - 1:
+        frame_num += 1
+        splash_screen.after(25, animate, frame_num, False)
+
+animate(0, False)
+
+def show_main():
+    def on_configure(event):
+        canvas.configure(scrollregion=canvas.bbox("all"))
+        
+    def drag_enter(event):
+        drop_label.config
+        label.config
+
+    def drag_leave(event):
+        drop_label.config
+        label.config
+        
+    def on_drop(event):
+        global file_path
+        drop_label.config
+        label.config
+        file_path = event.data.strip('{}')
+        root.withdraw()
+        save_video(file_path)
+
+    if any(char.isalpha() for char in __version__):
+        root.title(f"N8's Video to AVI Early Access {__version__}")
+        
+    else:
+        root.title(f"N8's Video to AVI {__version__}")
+
+    geo_width= 400
+    center_window(root, geo_width, 300)
+    root.iconphoto(True, icon)
+    root.wm_iconbitmap('icon.icns')
+    make_non_resizable(root)
+    watermark_label(root)
+
+    canvas = tk.Canvas(root)
+    canvas.pack(expand=True, fill="both")
+
+    # Create a button to choose a file
+    choose_button = Button(canvas, text="Choose Video File", command=choose_file)
+    choose_button.pack(side=tk.TOP, pady=50)
+
+    # Create a Label for the drop area
+    drop_label = tk.Label(canvas, text="Or Drag and Drop Video File Here")
+    drop_label.pack() 
+
+    # Bind the drop event to the on_drop function
+    drop_label.bind("<Enter>", drag_enter)
+    drop_label.bind("<Leave>", drag_leave)
+    drop_label.drop_target_register(DND_FILES)
+    drop_label.dnd_bind('<<Drop>>', on_drop)
+    canvas.bind("<Enter>", drag_enter)
+    canvas.bind("<Leave>", drag_leave)
+    canvas.dnd_bind('<<Drop>>', on_drop)
+    canvas.drop_target_register(DND_FILES)
+
+    print("Current working directory:", os.getcwd())
+    print("Executable path:", sys.executable)
+
+    # logo on drop event area
+    DnDLogo = 'icon_256x256.png' 
+    if bundle_path:
+        DnDLogo = os.path.join(bundle_path, DnDLogo)
+    else:
+        DnDLogo = './ico/icon_256x256.png'
+    imgYPos = 250
+
+    image = tk.PhotoImage(file=DnDLogo)
+    resized_image = image.subsample(2)
+    label = tk.Label(canvas, image=resized_image, bd=0)
+    label.image = resized_image
+    label.place(x=geo_width / 2, y=imgYPos, anchor=tk.CENTER)
+    
+    splash_screen.destroy()
+    root.deiconify()
 
 def on_closing():
     print("Closing the application.")
@@ -371,5 +411,7 @@ def on_closing():
 
 root.protocol("WM_DELETE_WINDOW", on_closing)
 atexit.register(on_closing)
+
+splash_screen.after(3500, show_main)
 
 root.mainloop()
