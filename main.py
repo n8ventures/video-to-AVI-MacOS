@@ -12,6 +12,7 @@ import atexit
 import threading
 import pywinctl as pwc 
 from tkmacosx import Button
+import re
 
 def is_running_from_bundle():
     # Check if the application is running from a bundled executable
@@ -345,7 +346,8 @@ def show_main():
         global file_path
         drop_label.config
         label.config
-        file_path = event.data.strip('{}')
+        file_path = re.findall(r'\{.*?\}|\S+', event.data)
+        file_path = [re.sub(r'[{}]', '', file) for file in file_path]
         root.withdraw()
         save_video(file_path)
 
