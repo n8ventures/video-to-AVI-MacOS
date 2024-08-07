@@ -1,4 +1,6 @@
 import os.path
+from packaging import version
+from __version__ import __version__
 #
 # Example settings file for dmgbuild
 #
@@ -13,22 +15,30 @@ import os.path
 
 # .. Useful stuff ..............................................................
 
-application =  defines.get('app',"./dist/N8's Video To AVI (Beta).app") # type: ignore
-appname = os.path.basename(application)
+def is_beta(version_str):
+    ver = version.parse(version_str)
+    return ver.is_prerelease or ver < version.parse("1.0.0")
+
+if is_beta(__version__):
+    appname = "N8's Video To AVI (Beta)"
+else:
+    appname = "N8's Video To AVI"
+
+application =  defines.get('app',f"./dist/{appname}.app") # type: ignore
 
 # .. Basics ....................................................................
 
 # Uncomment to override the output filename
-filename = "N8's Video To AVI (Beta).dmg"
+filename = f"{appname}.dmg"
 
 # Uncomment to override the output volume name
-volume_name = "N8's Video To AVI (Beta)"
+volume_name = appname
 
 # Volume format (see hdiutil create -help)
-format = defines.get("format", "UDRO")  # type: ignore # noqa: F821
+format = defines.get("format", "UDZO")  # type: ignore # noqa: F821
 
 # Compression level (if relevant)
-# compression_level = 9
+compression_level = 9
 
 # Volume size
 size = defines.get("size", None) # type: ignore
@@ -43,7 +53,7 @@ symlinks = {"Applications": "/Applications"}
 # hide = [ 'Secret.data' ]
 
 # Files to hide the extension of
-# hide_extension = [ 'README.rst' ]
+hide_extension = [ f'{appname}.app' ]
 
 # Volume icon
 #
@@ -52,10 +62,10 @@ symlinks = {"Applications": "/Applications"}
 # will be used to badge the system's Removable Disk icon. Badge icons require
 # pyobjc-framework-Quartz.
 #
-icon = './ico/dmg/icoDMG.icns'
+icon = './assets/dmg/icoDMG.icns'
 
 # Where to put the icons
-icon_locations = {appname: (120, 170), "Applications": (440, 170)}
+icon_locations = {f'{appname}.app': (120, 170), "Applications": (440, 170)}
 
 # .. Window configuration ......................................................
 
@@ -79,7 +89,7 @@ icon_locations = {appname: (120, 170), "Applications": (440, 170)}
 #
 # Other color components may be expressed either in the range 0 to 1, or
 # as percentages (e.g. 60% is equivalent to 0.6).
-background = "./ico/dmg/DMG_BG.png"
+background = "./assets/dmg/DMG_BG.png"
 
 show_status_bar = False
 show_tab_view = False
