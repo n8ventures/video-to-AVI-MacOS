@@ -1,3 +1,13 @@
+0.4.0:
+Bug:
+Weird DnD error when it comes to having asksaveasfile in the code. Need to figure out how to fix it. One idea is via queue but we'll see.
+
+New Features:
+- Batch Mode
+- Ability to choose a codec.
+- Updated ffmpeg to 7.0.3
+
+0.3.0:
 Figure out batch mode.
 - Batch mode is basically fast save mode, will save right next to original video.
 - But I also do have to figure out how to set it to convert videos by batches.
