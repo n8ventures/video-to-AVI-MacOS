@@ -311,7 +311,7 @@ root = TkinterDnD.Tk()
 if bundle_path:
     icon =  PhotoImage(file=os.path.join(bundle_path, 'ico.png'))
 else:
-    icon = PhotoImage(file='./ico/ico.png')
+    icon = PhotoImage(file='./assets/ico.png')
     
 root.withdraw()
 
@@ -451,7 +451,7 @@ def show_main():
     if bundle_path:
         DnDLogo = os.path.join(bundle_path, DnDLogo)
     else:
-        DnDLogo = './ico/icon_256x256.png'
+        DnDLogo = './assets/icon_256x256.png'
     imgYPos = 350
 
     image = tk.PhotoImage(file=DnDLogo)
