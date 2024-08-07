@@ -1,4 +1,5 @@
 from __version__ import __version__, __ffmpeg__
+from packaging import version
 import tkinter as tk
 from tkinter import filedialog, ttk, PhotoImage
 from tkinterdnd2 import TkinterDnD, DND_FILES
@@ -6,12 +7,9 @@ from PIL import Image, ImageTk, ImageSequence
 import os
 import sys
 import platform
-import shutil
 import subprocess
 import atexit
 import threading
-import pywinctl as pwc 
-from tkmacosx import Button
 import re
 
 def is_running_from_bundle():
@@ -154,38 +152,46 @@ def center_window(window, width, height):
 # Loading functions
 loading_screen = None
 
-def loading():
+def loading(texthere=None, filenum=0, filestotal=0):
     if loading_event.is_set():
         global loading_screen
-        loading_screen = create_popup(root, "Converting...", 350, 120, 0)
-        make_non_resizable(loading_screen)
-        
-        load_text_label = tk.Label(loading_screen, text='Converting...\nPlease wait.')
-        load_text_label.pack(pady=20)
+        if not loading_screen:  # Check if loading_screen is None
+            loading_screen = create_popup(root, "Converting...", 350, 120, 0)
+            make_non_resizable(loading_screen)
+            load_text_label = tk.Label(loading_screen, text='Converting...\nPlease wait.')
+            
+            if filenum == 0 and filestotal == 0 or filestotal == 1:
+                load_text_label.config(text=f'{texthere}\nConverting...\nPlease wait.')
+            else:
+                load_text_label.config(text=f'({filenum}/{filestotal}) - {texthere}\nConverting...\nPlease wait.')
+                
+            load_text_label.pack(pady=20)
 
-        progress_bar = ttk.Progressbar(loading_screen, mode='indeterminate')
-        progress_bar.pack(fill=tk.X, padx=10, pady=0)
-        progress_bar.start()
-        root.update_idletasks()
-        print('starting loading popup')
+            progress_bar = ttk.Progressbar(loading_screen, mode='indeterminate')
+            progress_bar.pack(fill=tk.X, padx=10, pady=0)
+            progress_bar.start()
+            root.update_idletasks()
+            print('starting loading popup')
     else:
-        loading_screen.destroy()
-        print('loading popup dead')
+        if loading_screen:  # Only destroy if it exists
+            loading_screen.destroy()
+            loading_screen = None  # Clear the reference
+            print('loading popup dead')
         
 loading_event = threading.Event()
 
-def loading_thread():
+def loading_thread(text=None, filenum=0, filestotal=0):
     loading_event.set()
     print('starting thread')
-    loading()
+    loading(text, filenum, filestotal)
     
-def loading_thread_switch(switch):
-    if switch == True:
-        threading.Thread(target=loading_thread, daemon=True).start()
-    if switch == False:
+def loading_thread_switch(switch, text=None, filenum=0, filestotal=0):
+    if switch:
+        threading.Thread(target=loading_thread, args=(text, filenum, filestotal, ), daemon=True).start()
+    else:
         print('killing loading popup')
         loading_event.clear()
-        loading()
+        root.after(0, loading)
         
 # sys functions
 def is_video_file(file_path):
@@ -226,59 +232,78 @@ def openOutputFolder(path, path2):
         print('window found!')
         subprocess.run(['open', '-R', path2])
 
-def save_video(file_path):
-    print(f"File: {file_path}")
-    
-    if file_path and is_video_file(file_path):
-        output_file = filedialog.asksaveasfile(
-        defaultextension=".avi",
-        initialfile=f"{os.path.splitext(os.path.basename(file_path))[0]}.avi",
-        filetypes=[("AVI video", "*.avi")],
-        )
-        if output_file:
-            output_file.close()
-            output_folder = os.path.abspath(output_file.name)
-            output_dir = os.path.dirname(output_file.name)
+def save_video(file_path, codec):
+    for filenum, file in enumerate(file_path, start=1):
+        
+        filename = os.path.basename(file)
+        if saveas_var.get():
+            print(f"File: {filename}")
+            output_file = filedialog.asksaveasfile(
+            defaultextension=".avi",
+            initialfile=f"{os.path.splitext(filename)[0]}.avi",
+            filetypes=[("AVI video", "*.avi")],
+            )
+            if output_file:
+                output_file.close()
+                output_folder = os.path.abspath(output_file.name)
+                output_dir = os.path.dirname(output_file.name)
 
-            loading_thread_switch(True)
-            VidToAVI(file_path, output_folder)
-            loading_thread_switch(False)
-
-            print("Conversion complete!")
-            root.deiconify()
-            openOutputFolder(output_dir, output_folder)
+                loading_thread_switch(True, filename, filenum, len(file_path))
+                VidToAVI(file, output_folder, codec)
+            else:
+                root.deiconify()
         else:
-            root.deiconify()
+            file_root = os.path.splitext(os.path.abspath(file))[0]
+            output_folder = f'{file_root}.avi'
+            output_dir = os.path.dirname(file)
+            loading_thread_switch(True, filename, filenum, len(file_path))
+            VidToAVI(file, output_folder, codec)
+    else: 
+        loading_thread_switch(False)
+        print("Conversion complete!")
+        root.deiconify()
+        if output_folder:
+            openOutputFolder(output_dir, output_folder)
+
+def choose_file(event):
+    global file_path
+    file_path = filedialog.askopenfilenames(
+        title="Select Video File",
+        filetypes=(("Video files", "*" + " *".join(video_extensions)), ("All files", "*.*"))
+    )
+    files_selected(file_path, codec_dict[codec_combobox.get()])
+
+def files_selected(file_path, codec):
+    root.withdraw()
+    print('File Path: ', file_path)
+    if file_path:
+        for file in file_path:
+            if not is_video_file(file):
+                print(f'File "{file}" is not a supported video file.')
+                root.deiconify()
+                return
+        threading.Thread(target= save_video, args=(file_path, codec ), daemon=True).start()
     elif file_path == '':
         root.deiconify()
         print('No video File dropped.')
     else:
         notavideo()
 
-def choose_file():
-    global file_path
-    root.withdraw()
-    file_path = filedialog.askopenfilename(
-        title="Select Video File",
-        filetypes=(("Video files", "*" + " *".join(video_extensions)), ("All files", "*.*"))
-    )
-    
-    threading.Thread(target= save_video, args=(file_path, ), daemon=True).start()
-
 # Main function
-def VidToAVI(file_path, output_path):
+def VidToAVI(file_path, output_path, codec):
     cmd = [
         ffmpeg,
         "-loglevel", "-8",
         '-y',
         '-i', file_path,
-        "-vcodec", "copy",
+        "-vcodec", codec,
         "-acodec","copy",
         output_path,
     ]
     print('converting to AVI...')
     print('File path: ', file_path)
     print('Output path: ', output_path)
+
     subprocess.run(cmd)
 
 # main root
@@ -331,34 +356,46 @@ def animate(frame_num, loop):
 animate(0, False)
 
 def show_main():
+    global codec_dict, codec_combobox, saveas_var
     def on_configure(event):
         canvas.configure(scrollregion=canvas.bbox("all"))
-        
-    def drag_enter(event):
-        drop_label.config
-        label.config
 
-    def drag_leave(event):
-        drop_label.config
-        label.config
-        
     def on_drop(event):
         global file_path
         drop_label.config
         label.config
         file_path = re.findall(r'\{.*?\}|\S+', event.data)
         file_path = [re.sub(r'[{}]', '', file) for file in file_path]
-        root.withdraw()
-        save_video(file_path)
-
-    if any(char.isalpha() for char in __version__):
-        root.title(f"N8's Video to AVI Early Access {__version__}")
         
+        files_selected(file_path, codec_dict[codec_combobox.get()])
+    
+    def on_check():
+        if saveas_var.get():
+            unbind_dnd(drop_label)
+            unbind_dnd(canvas)
+            unbind_dnd(saveas_box)
+            unbind_dnd(codec_label)
+            drop_label.config(text="Drag and Drop Disabled.\n\nPlease, Click this area to select file/s")
+            root.update_idletasks()
+        else:
+            reg_dnd(drop_label)
+            reg_dnd(canvas)
+            reg_dnd(saveas_box)
+            reg_dnd(codec_label)
+            drop_label.config(text="Drag and Drop Video File Here\nor\nClick this area to select file/s")
+            root.update_idletasks()
+
+    def is_beta(version_str):
+        ver = version.parse(version_str)
+        return ver.is_prerelease or ver < version.parse("1.0.0")
+
+    if is_beta(__version__):
+        root.title(f"N8's Video to AVI (Beta) {__version__}")
     else:
         root.title(f"N8's Video to AVI {__version__}")
 
     geo_width= 400
-    center_window(root, geo_width, 300)
+    center_window(root, geo_width, 400)
     root.iconphoto(True, icon)
     root.wm_iconbitmap('icon.icns')
     make_non_resizable(root)
@@ -366,24 +403,45 @@ def show_main():
 
     canvas = tk.Canvas(root)
     canvas.pack(expand=True, fill="both")
-
-    # Create a button to choose a file
-    choose_button = Button(canvas, text="Choose Video File", command=choose_file)
-    choose_button.pack(side=tk.TOP, pady=50)
-
+    
+    codec_dict = {
+    "Quick Convert (Remux)": "copy",
+    "AYUV": "ayuv",
+    "QuickTime Animation": "qrtle",
+    "H.264": "libx264",
+    "MPEG-4": "mpeg4",
+    "Raw Video": "rawvideo",
+    }
+    
     # Create a Label for the drop area
-    drop_label = tk.Label(canvas, text="Or Drag and Drop Video File Here")
-    drop_label.pack() 
+    drop_label = tk.Label(canvas, text="Drag and Drop Video File Here\nor\nClick this area to select file/s")
+    drop_label.pack(pady=50)
+    
+    # Create dropdown menu to select codecs
+    codec_label = tk.Label(canvas, text="Select AVI Codec:")
+    codec_label.pack(pady=(10, 5))
+    
+    saveas_var = tk.IntVar()
+    saveas_box = tk.Checkbutton(canvas, text='Save As Mode', variable=saveas_var, command=on_check)
+    saveas_box.pack(pady=10)
+    
+    codec_combobox = ttk.Combobox(canvas, values=list(codec_dict.keys()), state="readonly")
+    if codec_dict:
+        codec_combobox.set(list(codec_dict.keys())[0])
+
+    codec_combobox.pack() 
 
     # Bind the drop event to the on_drop function
-    drop_label.bind("<Enter>", drag_enter)
-    drop_label.bind("<Leave>", drag_leave)
-    drop_label.drop_target_register(DND_FILES)
-    drop_label.dnd_bind('<<Drop>>', on_drop)
-    canvas.bind("<Enter>", drag_enter)
-    canvas.bind("<Leave>", drag_leave)
-    canvas.dnd_bind('<<Drop>>', on_drop)
-    canvas.drop_target_register(DND_FILES)
+    def reg_dnd(widget):
+        widget.drop_target_register(DND_FILES)
+        widget.dnd_bind('<<Drop>>', on_drop)
+    
+    def unbind_dnd(widget):
+        widget.dnd_bind('<<Drop>>')
+
+    codec_label.bind('<Button-1>', choose_file)
+    drop_label.bind('<Button-1>', choose_file)
+    canvas.bind('<Button-1>', choose_file)
 
     print("Current working directory:", os.getcwd())
     print("Executable path:", sys.executable)
@@ -394,7 +452,7 @@ def show_main():
         DnDLogo = os.path.join(bundle_path, DnDLogo)
     else:
         DnDLogo = './ico/icon_256x256.png'
-    imgYPos = 250
+    imgYPos = 350
 
     image = tk.PhotoImage(file=DnDLogo)
     resized_image = image.subsample(2)
