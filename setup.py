@@ -1,12 +1,19 @@
 from setuptools import setup
-from __version__ import __versionMac__
+from __version__ import __version__
+from packaging import version
 
-if any(char.isalpha() for char in __versionMac__):
+def is_beta(version_str):
+    ver = version.parse(version_str)
+    return ver.is_prerelease or ver < version.parse("1.0.0")
+
+if is_beta(__version__):
+    appname = "N8's Video To AVI (Beta)"
     icon = 'icoDev.icns'
 else:
+    appname = "N8's Video To AVI"
     icon = 'ico.icns'
 
-APP = ['main-MacARM.py']
+APP = ['main.py']
 OPTIONS = {
     'iconfile': icon, 
     'packages':[
@@ -14,20 +21,11 @@ OPTIONS = {
         'tkinter',
         'tkinterdnd2',
         'subprocess', 
-        'json',
-        'urllib3', 
         'packaging', 
-        'requests', 
-        'pywinctl', 
-        'tkmacosx',
-        'colour',
-        'charset_normalizer',
-        'colorama',
         'tk',
         'typing_extensions',
         'threading',
         'shutil',
-        'glob',
         'platform',
         'encodings',
         ],
@@ -43,8 +41,8 @@ OPTIONS = {
         'threading',
         'time',
         'math',
-        'glob',
         'platform',
+        're',
         ],
     'frameworks':[
         '/opt/homebrew/Cellar/tcl-tk/8.6.14/lib/libtk8.6.dylib',
@@ -54,7 +52,7 @@ OPTIONS = {
         'NSHumanReadableCopyright': 
             'Copyright © 2024 John Nathaniel Calvara. This software is licensed under the MIT License.',
         'CFBundleIdentifier':
-            "dev.n8ventures.N8VideoToAVI(Beta)",
+            "dev.n8ventures.N8VideoToAVI",
         'NSAppleScriptEnabled':
             True,
         'CFBundleGetInfoString':
@@ -75,10 +73,10 @@ setup(
     data_files=DATA_FILES,
     options={'py2app': OPTIONS},
     setup_requires=['py2app'],
-    name='N8\'s Video To AVI (Beta)',
-    version= __versionMac__,
+    name=appname,
+    version= __version__,
     description='convert videos to AVI using FFMPEG.',
     author='John Nathaniel Calvara',
     author_email='nate@n8ventures.dev',
-    url='https://github.com/n8ventures/video-to-gifski',
+    url='https://github.com/n8ventures/video-to-AVI-MacOS',
 )
