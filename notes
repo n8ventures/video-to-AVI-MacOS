@@ -1,3 +1,17 @@
+0.5.0:
+Figured out the bug. Thread was going on ahead and called in too many windows. added a print() just to stabilize it.
+
+Also restoring DnD functions.
+(Commenting out on_check just in case I need it again.)
+
+- Fixed various TCL errors
+- Added more codec options
+- Fixed codec mispelling Quicktime Animation
+- Fixed Label change on batch files
+- Tweaked logic on saving video
+    - Will ask which directory to save instead of individual files (This also prevents more tclerrors)
+- removed useless code
+
 0.4.0:
 Bug:
 Weird DnD error when it comes to having asksaveasfile in the code. Need to figure out how to fix it. One idea is via queue but we'll see.
