@@ -1,3 +1,7 @@
+0.5.1:
+- Fixed first entry not showing up on loading label.
+- Disabled the ability to close converting popup to prevent app crashes.
+
 0.5.0:
 Figured out the bug. Thread was going on ahead and called in too many windows. added a print() just to stabilize it.
 
