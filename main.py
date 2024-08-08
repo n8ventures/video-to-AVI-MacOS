@@ -44,7 +44,18 @@ def create_popup(root, title, width, height, switch):
     # popup.overrideredirect(True)
     popup.attributes('-type', 'utility')
     center_window(popup, width, height)
-    
+
+    def on_closing():
+        if switch == 1:
+            popup.destroy()
+
+    popup.protocol("WM_DELETE_WINDOW", on_closing)
+
+    def noop_close():
+        pass
+
+    popup.bind("<Destroy>", lambda e: noop_close())
+
     if switch == 1:
         popup.bind("<FocusOut>", lambda e: popup.destroy())
 
@@ -152,17 +163,17 @@ def center_window(window, width, height):
 # Loading functions
 loading_screen = None
 
-def loading():
+def loading(texthere='', filenum=0, filestotal=0):
     global loading_screen, load_text_label
     
     if loading_event.is_set():
         if not loading_screen:  # Check if loading_screen is None
-            loading_screen = create_popup(root, "Converting...", 350, 120, 0)
+            loading_screen = create_popup(root, "Converting...", 350, 150, 0)
             make_non_resizable(loading_screen)
             load_text_label = tk.Label(loading_screen, text='Converting...\nPlease wait.')
             load_text_label.pack(pady=20)
             
-            update_loading()
+            update_loading(texthere, filenum, filestotal)
             
             progress_bar = ttk.Progressbar(loading_screen, mode='indeterminate')
             progress_bar.pack(fill=tk.X, padx=10, pady=0)
@@ -177,20 +188,22 @@ def loading():
 
 def update_loading(texthere='', filenum=0, filestotal=0):
     if filenum == 0 and filestotal == 0 or filestotal == 1:
-        load_text_label.config(text=f'{texthere}\nConverting...\nPlease wait.')
+        load_text_label.config(text=f'{texthere}\n\nConverting...\nPlease wait.')
     else:
-        load_text_label.config(text=f'({filenum}/{filestotal}) - {texthere}\nConverting...\nPlease wait.')
+        load_text_label.config(text=f'({filenum}/{filestotal} Files)\n{texthere}\n\nConverting...\nPlease wait.')
+    
+    loading_screen.update_idletasks()
 
 loading_event = threading.Event()
 
-def loading_thread():
+def loading_thread(texthere='', filenum=0, filestotal=0):
     loading_event.set()
     print('starting thread')
-    loading()
+    loading(texthere, filenum, filestotal)
     
-def loading_thread_switch(switch):
+def loading_thread_switch(switch, texthere='', filenum=0, filestotal=0):
     if switch:
-        threading.Thread(target=loading_thread, daemon=True).start()
+        threading.Thread(target=loading_thread, args=(texthere, filenum, filestotal), daemon=True).start()
         print('Thread Initialized.')
     else:
         print('killing loading popup')
@@ -251,7 +264,7 @@ def save_video(file_path, codec):
         if not output_dir:
             root.deiconify()
             return
-    loading_thread_switch(True)
+    loading_thread_switch(True, os.path.basename(file_path[0]), 1, len(file_path))
     
     for filenum, file in enumerate(file_path, start=1):
         filename = os.path.basename(file)
@@ -265,6 +278,7 @@ def save_video(file_path, codec):
         
         if loading_screen:
             update_loading(filename, filenum, len(file_path))
+
         VidToAVI(file, output_file, codec)
     
     loading_thread_switch(False)
