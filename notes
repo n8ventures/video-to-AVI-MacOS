@@ -1,3 +1,24 @@
+0.5.2:
+- added tkmacosx Button module
+- added Codec popup info button functionality
+- added info and usage descriptions on each codec via codec_dict
+- Some minor text improvements
+- shortened splash screen time (3000ms to 1750ms)
+
+ffmpeg speed test:
+Video = h.264 - 200MB - 1:40 - 2160x1380
+
+copy - Very Fast - Identical Size (200MB)
+utvideo - Fast - 4GB
+rawvideo - Fast - 13.5GB
+qtrle - Very Slow - 4GB
+prores - Fast - 3GB
+huffyuv - Fast - 6GB
+h.264 - Slow - 12MB
+mpeg4 - Fast - 29MB
+mjpeg - Slow -270MB
+cineform - Fast - 5GB
+
 0.5.1:
 - Fixed first entry not showing up on loading label.
 - Disabled the ability to close converting popup to prevent app crashes.
