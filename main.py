@@ -3,6 +3,7 @@ from packaging import version
 import tkinter as tk
 from tkinter import filedialog, ttk, PhotoImage
 from tkinterdnd2 import TkinterDnD, DND_FILES
+from tkmacosx import Button
 from PIL import Image, ImageTk, ImageSequence
 import os
 import sys
@@ -66,7 +67,7 @@ def create_popup(root, title, width, height, switch):
 # popups
 def about():
     geo_width = 370
-    geo_len= 410
+    geo_len= 300
 
     aboutmenu = create_popup(root, "About Us!", geo_width, geo_len, 1)
     make_non_resizable(aboutmenu)
@@ -96,7 +97,26 @@ def about():
         "https://github.com/n8ventures",
     )
 
-    close_button = ttk.Button(aboutmenu, text="Close", command=aboutmenu.destroy)
+    close_button = Button(aboutmenu, text="Close", activebackground=('red'), command=aboutmenu.destroy)
+    close_button.pack(pady=10)
+    
+def codec_popup():
+    geo_width = 350
+    geo_len= 400
+
+    selected_codec = codec_combobox.get()
+    codec_info, codec_description, codec_usage, codec_speed, codec_size, codec_quality = codec_dict.get(selected_codec, ("Unknown", "No information available.", "How did you break it???", 'tell me', 'nate@n8venures.dev', 'pls ty'))
+
+    codec_menu = create_popup(root, f"Codec Info: {codec_info}", geo_width, geo_len, 1)
+    make_non_resizable(codec_menu)
+
+    codec_message = tk.Message(codec_menu, text=f"{selected_codec}\n[{codec_info}]\n\nINFO:\n{codec_description}\n\nUSAGE:\n{codec_usage}",justify='center')
+    codec_message.pack(pady=10)
+    
+    codec_stat = tk.Label(codec_menu, text=f"QUALITY: {codec_quality}\n\nSPEED: {codec_speed}\n\nEST. SIZE: {codec_size}", justify='left')
+    codec_stat.pack(pady=10)
+
+    close_button = Button(codec_menu, text="Close", activebackground=('red'), command=codec_menu.destroy)
     close_button.pack(pady=10)
 
 def notavideo():
@@ -110,7 +130,7 @@ def notavideo():
     about_label = tk.Label(notavideo, text=errortext, justify=tk.LEFT)
     about_label.pack(pady=10)
 
-    close_button = ttk.Button(notavideo, text="Close", command=notavideo.destroy)
+    close_button = Button(notavideo, text="Close", activebackground=('red'), command=notavideo.destroy)
     close_button.pack(pady=10)
 
 def clickable_link_labels(aboutmenu, text, link):
@@ -296,7 +316,7 @@ def choose_file(event):
         filetypes=(("Video files", "*" + " *".join(video_extensions)), ("All files", "*.*"))
     )
     if file_path:
-        files_selected(file_path, codec_dict[codec_combobox.get()])
+        files_selected(file_path, codec_dict[codec_combobox.get()][0])
     else:
         root.deiconify()
 
@@ -338,7 +358,10 @@ if bundle_path:
     icon =  PhotoImage(file=os.path.join(bundle_path, 'ico.png'))
 else:
     icon = PhotoImage(file='./assets/ico.png')
-    
+
+root.iconphoto(True, icon)
+root.wm_iconbitmap('icon.icns')
+
 root.withdraw()
 
 splash_screen = tk.Toplevel(root)
@@ -383,8 +406,6 @@ animate(0, False)
 
 def show_main():
     global codec_dict, codec_combobox, saveas_var
-    def on_configure(event):
-        canvas.configure(scrollregion=canvas.bbox("all"))
 
     def on_drop(event):
         global file_path
@@ -393,7 +414,7 @@ def show_main():
         file_path = [re.sub(r'[{}]', '', file) for file in file_path]
         
         if file_path:
-            files_selected(file_path, codec_dict[codec_combobox.get()])
+            files_selected(file_path, codec_dict[codec_combobox.get()][0])
         else:
             root.deiconify()
     
@@ -424,26 +445,72 @@ def show_main():
 
     geo_width= 400
     center_window(root, geo_width, 400)
-    root.iconphoto(True, icon)
-    root.wm_iconbitmap('icon.icns')
     make_non_resizable(root)
     watermark_label(root)
 
-    canvas = tk.Canvas(root)
+    canvas = tk.Canvas(root, highlightthickness=0, bd=0)
     canvas.pack(expand=True, fill="both")
     
     codec_dict = {
-    "Quick Convert (Remux)": "copy",
-    "UT Video": "utvideo",
-    "QuickTime Animation": "qtrle",
-    "Apple ProRes": "prores",
-    "Huffyuv": "huffyuv",
-    "H.264": "libx264",
-    "MPEG-4": "mpeg4",
-    "MJPEG": "mjpeg",
-    "CineForm": "cfhd",
-    "Raw Video": "rawvideo",
-    "DV": "dvvideo",
+        "Quick Convert (Remux)": 
+            ("copy", 
+            "Uses the video's built-in codec.\nNo re-encoding is processed.", 
+            "For fast conversion without quality loss. Use this if you know the original codec used in the video.",
+            "Very Fast", "Identical", "lossless"),
+
+        "UT Video": 
+            ("utvideo", 
+            "Lossless codec with high compression ratios and speed. Supports various color spaces and is designed for high performance.", 
+            "Ideal for video editing and archiving where lossless quality is required, especially for intermediate files.",
+            "Fast", "Significantly Larger", "lossless"),
+
+        "Raw Video": 
+            ("rawvideo", 
+            "Uncompressed video. Provides the highest quality but results in very large file sizes.\nThis is the equivalent of Adobe After Effect's 'None (Uncompressed)' codec on AVI.",
+            "Used for video editing and archiving when quality is paramount.",
+            "Fast", "Much Larger", "lossless"),
+
+        "QuickTime Animation": 
+            ("qtrle", 
+            "RLE (Run-Length Encoding) based codec, typically used for animated content with low motion.", 
+            "Best used for animations and simple graphics where compression efficiency is prioritized over high motion detail.",
+            "Very Slow", "Significantly Larger", "lossless"),
+
+        "Apple ProRes": 
+            ("prores", 
+            "A high-quality, lossy codec widely used in professional video production for its efficient balance between file size and quality.", 
+            "Commonly used in post-production and broadcasting for its ease of editing and high visual fidelity.",
+            "Fast", "Larger", "lossy"),
+
+        "Huffyuv": 
+            ("huffyuv", 
+            "A lossless video codec that compresses RGB video data without losing quality.", 
+            "Preferred for scenarios where lossless quality is essential but some file size reduction is beneficial.",
+            "Fast", "Significantly Larger", "lossless"),
+
+        "H.264": 
+            ("libx264", 
+            "A highly efficient video compression standard, widely used for streaming, video storage, and digital distribution.", 
+            "The go-to codec for streaming, web video, and general video storage due to its high compression efficiency.",
+            "Slow", "Much Smaller", "lossy"),
+
+        "MPEG-4": 
+            ("mpeg4", 
+            "A widely used codec for internet video, digital distribution, and some portable media players.", 
+            "Versatile for various video applications, though often replaced by H.264 and other modern codecs in new projects.",
+            "Fast", "Smaller", "lossy"),
+
+        "MJPEG": 
+            ("mjpeg", 
+            "A codec that encodes video as a series of JPEG images, often used in older video capture devices.", 
+            "Common in video capture, surveillance, and devices with limited processing power where simplicity is key.",
+            "Slow", "Larger", "lossy"),
+
+        "CineForm": 
+            ("cfhd", 
+            "A high-quality, lossy codec optimized for video editing, balancing compression and quality.", 
+            "Used in professional video editing workflows, especially for intermediate files during post-production.",
+            "Fast", "Significantly Larger", "lossy"),
     }
     
     # Create a Label for the drop area
@@ -454,18 +521,22 @@ def show_main():
     codec_label = tk.Label(canvas, text="Select AVI Codec:")
     codec_label.pack(pady=(10, 5))
     
-    saveas_var = tk.IntVar()
-    saveas_box = tk.Checkbutton(canvas, text='Save As Mode', variable=saveas_var)
-    # saveas_box.config(command=on_check)
-    saveas_box.pack(pady=10)
+    codec_frame = tk.Frame(canvas)
+    codec_frame.pack()
     
-    codec_combobox = ttk.Combobox(canvas, values=list(codec_dict.keys()), state="readonly")
+    codec_combobox = ttk.Combobox(codec_frame, values=list(codec_dict.keys()), state="readonly")
     if codec_dict:
         codec_combobox.set(list(codec_dict.keys())[0])
 
-    codec_combobox.pack() 
+    codec_combobox.pack(side='left')
+
+    moreinfo_button = Button(codec_frame, text='?', activebackground=('yellow','green'), width=25, height=25, borderless=1, command=codec_popup)
+    moreinfo_button.pack(side='right')
     
-    #TODO: add more info about each codec
+    saveas_var = tk.IntVar()
+    saveas_box = tk.Checkbutton(canvas, text="'Save As' Mode", variable=saveas_var)
+    # saveas_box.config(command=on_check)
+    saveas_box.pack(pady=10)
 
     # Bind the drop event to the on_drop function
     def reg_dnd(widget):
@@ -512,6 +583,6 @@ def on_closing():
 root.protocol("WM_DELETE_WINDOW", on_closing)
 atexit.register(on_closing)
 
-splash_screen.after(3500, show_main)
+splash_screen.after(1750, show_main)
 
 root.mainloop()
