@@ -1,5 +1,5 @@
 from __version__ import __version__, __ffmpeg__
-from packaging import version
+import packaging.version
 import tkinter as tk
 from tkinter import filedialog, ttk, PhotoImage
 from tkinterdnd2 import TkinterDnD, DND_FILES
@@ -45,6 +45,7 @@ def create_popup(root, title, width, height, switch):
     # popup.overrideredirect(True)
     popup.attributes('-type', 'utility')
     center_window(popup, width, height)
+    popup.lift()
 
     def on_closing():
         if switch == 1:
@@ -58,7 +59,7 @@ def create_popup(root, title, width, height, switch):
     popup.bind("<Destroy>", lambda e: noop_close())
 
     if switch == 1:
-        popup.bind("<FocusOut>", lambda e: popup.destroy())
+        popup.bind("<FocusOut>", lambda e: on_closing())
 
     popup.grab_set()
     
@@ -149,7 +150,6 @@ def watermark_label(parent_window):
     
     about_menu = tk.Menu (menu_bar, tearoff=0)
     about_menu.add_command(label="About Us", command=about)
-    # about_menu.add_command(label="Check for Updates", command=CheckUpdates)
     menu_bar.add_cascade(label="Help", menu=about_menu)
     
     parent_window.config(menu=menu_bar)
@@ -360,7 +360,6 @@ else:
     icon = PhotoImage(file='./assets/ico.png')
 
 root.iconphoto(True, icon)
-root.wm_iconbitmap('icon.icns')
 
 root.withdraw()
 
@@ -435,8 +434,8 @@ def show_main():
     #         root.update_idletasks()
 
     def is_beta(version_str):
-        ver = version.parse(version_str)
-        return ver.is_prerelease or ver < version.parse("1.0.0")
+        ver = packaging.version.parse(version_str)
+        return ver.is_prerelease or ver < packaging.version.parse("1.0.0")
 
     if is_beta(__version__):
         root.title(f"N8's Video to AVI (Beta) {__version__}")
@@ -548,9 +547,7 @@ def show_main():
 
     reg_dnd(drop_label)
     reg_dnd(canvas)
-    reg_dnd(saveas_box)
-    reg_dnd(codec_label)
-    codec_label.bind('<Button-1>', choose_file)
+    reg_dnd(codec_frame)
     drop_label.bind('<Button-1>', choose_file)
     canvas.bind('<Button-1>', choose_file)
 
