@@ -1,12 +1,16 @@
 import os.path
+import sys
+
 from packaging import version
-from __version__ import __version__
+
+sys.path.append(os.path.abspath(os.path.dirname('__version__.py')))
+from __version__ import __version__ 
 #
 # Example settings file for dmgbuild
 #
 
 # Use like this: 
-#  dmgbuild -s dmgbuild.py -D filesystem='APFS' "N8's Video To Gifski (Beta)" "N8's Video To Gifski (Beta).dmg"
+#  dmgbuild -s dmgbuild.py "N8's Video to AVI" "N8's Video To AVI.dmg" 
 
 # You can actually use this file for your own application (not just TextEdit)
 # by doing e.g.
@@ -62,10 +66,13 @@ hide_extension = [ f'{appname}.app' ]
 # will be used to badge the system's Removable Disk icon. Badge icons require
 # pyobjc-framework-Quartz.
 #
-icon = './assets/dmg/icoDMG.icns'
+if is_beta(__version__):
+    icon = './assets/dmg/icoDMG.icns'
+else:
+    icon = './assets/dmg/icoDMG.icns'
 
 # Where to put the icons
-icon_locations = {f'{appname}.app': (120, 170), "Applications": (440, 170)}
+icon_locations = {f'{appname}.app': (120, 170), "Applications": (450, 170)}
 
 # .. Window configuration ......................................................
 
@@ -89,7 +96,10 @@ icon_locations = {f'{appname}.app': (120, 170), "Applications": (440, 170)}
 #
 # Other color components may be expressed either in the range 0 to 1, or
 # as percentages (e.g. 60% is equivalent to 0.6).
-background = "./assets/dmg/DMG_BG.png"
+if is_beta(__version__):
+    background = "./assets/dmg/DMGDev_BG.png"
+else:
+    background = "./assets/dmg/DMG_BG.png"
 
 show_status_bar = False
 show_tab_view = False

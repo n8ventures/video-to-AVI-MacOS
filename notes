@@ -1,3 +1,9 @@
+1.0.0:
+- Removed clickable Codec_label.
+- Tidied up setup.py
+- adjusted requirements.txt
+- Tidied up main.py
+
 0.5.2:
 - added tkmacosx Button module
 - added Codec popup info button functionality
