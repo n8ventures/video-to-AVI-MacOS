@@ -1,17 +1,17 @@
 from setuptools import setup
 from __version__ import __version__
-from packaging import version
+import packaging.version
 
 def is_beta(version_str):
-    ver = version.parse(version_str)
-    return ver.is_prerelease or ver < version.parse("1.0.0")
+    ver = packaging.version.parse(version_str)
+    return ver.is_prerelease or ver < packaging.version.parse("1.0.0")
 
 if is_beta(__version__):
     appname = "N8's Video To AVI (Beta)"
-    icon = 'icoDev.icns'
+    icon = 'iconDev.icns'
 else:
     appname = "N8's Video To AVI"
-    icon = 'ico.icns'
+    icon = 'icon.icns'
 
 APP = ['main.py']
 OPTIONS = {
@@ -20,29 +20,22 @@ OPTIONS = {
         'PIL',
         'tkinter',
         'tkinterdnd2',
-        'subprocess', 
         'packaging', 
+        'tkmacosx',
         'tk',
-        'typing_extensions',
-        'threading',
-        'shutil',
-        'platform',
-        'encodings',
         ],
     'includes':[
-        'requests',
         'subprocess',
         'sys',
         'atexit',
-        'tkinter',
         'os',
-        'json',
         'shutil',
         'threading',
-        'time',
-        'math',
         'platform',
         're',
+        ],
+        'excludes': [
+        'PyInstaller', #this is due to the packaging module
         ],
     'frameworks':[
         '/opt/homebrew/Cellar/tcl-tk/8.6.14/lib/libtk8.6.dylib',
@@ -65,6 +58,9 @@ DATA_FILES=[
         'icon.icns',
         'iconDev.icns',
         './splash/splash.gif',
+        './assets/ico.png',
+        './assets/icondev.png',
+        './assets/icon_256x256.png'
         ]),
      ('../lib', ['/opt/homebrew/Cellar/tcl-tk/8.6.14/lib/']),
         ]
