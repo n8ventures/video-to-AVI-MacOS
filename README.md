@@ -29,24 +29,7 @@ You can also learn more information about the codec you'll be implimenting!
 
 <img src='/assets/howto/Checking-codec-Info.gif' width=40% height=40%>
 
-### For more info about each codec here's a table:
-
-- To test, I used a 200MB h.264 video lasting about a minute and a half to convert and here's my results. Note that your experience may vary.
-
-| Codec | Speed | Size | Lossless | Description | Usage |
-| :---: | :---: | :---: | :---: | --- | --- |
-| **copy**<br>(Quick Convert/Remux) | Very Fast | Identical | ❓[*](#depends-on-the-video-codec-from-the-original-video) |  Uses the video's built-in codec. No re-encoding is processed. | For fast conversion without quality loss. Use this if you know the original codec used in the video. |
-| **utvideo** | Fast | Significantly Larger | ✅ | Lossless codec with high compression ratios and speed. Supports various color spaces and is designed for high performance. | Ideal for video editing and archiving where lossless quality is required, especially for intermediate files. |
-| **rawvideo**  | Fast | Much Larger | ✅ |  Uncompressed video. Provides the highest quality but results in very large file sizes.<br><br>*This is the equivalent of Adobe After Effect's 'None (Uncompressed)' codec on AVI.* | Used for video editing and archiving when quality is paramount. |
-| **qtrle**<br>(QuickTime Animation) | Very Slow | Significantly Larger | ✅ | RLE (Run-Length Encoding) based codec, typically used for animated content with low motion. | Best used for animations and simple graphics where compression efficiency is prioritized over high motion detail.<br><br>*However, please do note that this is a really dated codec, and I'd advise you choose a different lossless codec.* |
-| **prores**<br>(Apple ProRes) | Fast | Larger | ❌ |  A high-quality, lossy codec widely used in professional video production for its efficient balance between file size and quality. | Commonly used in post-production and broadcasting for its ease of editing and high visual fidelity. |
-| **huffyuv** | Fast | Significantly Larger | ✅ |  A lossless video codec that compresses RGB video data without losing quality. | Preferred for scenarios where lossless quality is essential but some file size reduction is beneficial.
-| **libx264**<br>(H.264) | Slow | Much Smaller | ❌ | A highly efficient video compression standard, widely used for streaming, video storage, and digital distribution. | The go-to codec for streaming, web video, and general video storage due to its high compression efficiency. |
-| **mpeg4**<br>(MPEG-4) | Fast | Smaller | ❌ | A widely used codec for internet video, digital distribution, and some portable media players. | Versatile for various video applications, though often replaced by H.264 and other modern codecs in new projects. |
-| **mjpeg** | Slow | Larger | ❌ | A codec that encodes video as a series of JPEG images, often used in older video capture devices. | Common in video capture, surveillance, and devices with limited processing power where simplicity is key. |
-| **cfhd**<br>(CineForm) | Fast | Significantly Larger | ❌ | A high-quality, lossy codec optimized for video editing, balancing compression and quality. | Used in professional video editing workflows, especially for intermediate files during post-production. |
-
-##### **Depends on the video codec from the original video.*
+For more information regarding about the codecs, check [here](#codecs) or keep on scrolling!
 
 ### The 'Save As' checkbox!
 
@@ -69,3 +52,24 @@ You can also learn more information about the codec you'll be implimenting!
 ### 3. Done!
 
 Video is converted to AVI!
+
+## Codecs
+
+Here's a quick overview of what each codec does, but I advise to do more research before you choose the right one.
+
+- To test, I used a 200MB h.264 video lasting about a minute and a half to convert and here's my results. Note that your experience may vary.
+
+| Codec | Speed | Size | Lossless | Description | Usage |
+| :---: | :---: | :---: | :---: | --- | --- |
+| **copy**<br>(Quick Convert/Remux) | Very Fast | Identical | ❓[*](#depends-on-the-video-codec-from-the-original-video) |  Uses the video's built-in codec. No re-encoding is processed. | For fast conversion without quality loss. Use this if you know the original codec used in the video. |
+| **utvideo** | Fast | Significantly Larger | ✅ | Lossless codec with high compression ratios and speed. Supports various color spaces and is designed for high performance. | Ideal for video editing and archiving where lossless quality is required, especially for intermediate files. |
+| **rawvideo**  | Fast | Much Larger | ✅ |  Uncompressed video. Provides the highest quality but results in very large file sizes.<br><br>*This is the equivalent of Adobe After Effect's 'None (Uncompressed)' codec on AVI.* | Used for video editing and archiving when quality is paramount. |
+| **qtrle**<br>(QuickTime Animation) | Very Slow | Significantly Larger | ✅ | RLE (Run-Length Encoding) based codec, typically used for animated content with low motion. | Best used for animations and simple graphics where compression efficiency is prioritized over high motion detail.<br><br>*However, please do note that this is a really dated codec, and I'd advise you choose a different lossless codec.* |
+| **prores**<br>(Apple ProRes) | Fast | Larger | ❌ |  A high-quality, lossy codec widely used in professional video production for its efficient balance between file size and quality. | Commonly used in post-production and broadcasting for its ease of editing and high visual fidelity. |
+| **huffyuv** | Fast | Significantly Larger | ✅ |  A lossless video codec that compresses RGB video data without losing quality. | Preferred for scenarios where lossless quality is essential but some file size reduction is beneficial.
+| **libx264**<br>(H.264) | Slow | Much Smaller | ❌ | A highly efficient video compression standard, widely used for streaming, video storage, and digital distribution. | The go-to codec for streaming, web video, and general video storage due to its high compression efficiency. |
+| **mpeg4**<br>(MPEG-4) | Fast | Smaller | ❌ | A widely used codec for internet video, digital distribution, and some portable media players. | Versatile for various video applications, though often replaced by H.264 and other modern codecs in new projects. |
+| **mjpeg** | Slow | Larger | ❌ | A codec that encodes video as a series of JPEG images, often used in older video capture devices. | Common in video capture, surveillance, and devices with limited processing power where simplicity is key. |
+| **cfhd**<br>(CineForm) | Fast | Significantly Larger | ❌ | A high-quality, lossy codec optimized for video editing, balancing compression and quality. | Used in professional video editing workflows, especially for intermediate files during post-production. |
+
+##### **Depends on the video codec from the original video.*
