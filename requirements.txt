@@ -1,8 +1,11 @@
 tk==0.1.0
-tkinterdnd2-universal==1.7.3
+tkinterdnd2==0.4.2
 tqdm==4.66.2
-setuptools==69.5.1
+setuptools==70.3.0
 tkmacosx==1.0.5
-py2app==0.28.7
+py2app==0.28.8
 dmgbuild==1.6.1
 packaging==23.2
+darkdetect==0.8.0
+emoji==2.14.0
+sv-ttk==2.5.5
