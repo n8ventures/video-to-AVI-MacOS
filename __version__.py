@@ -1,2 +1,3 @@
-__version__ = '1.0.0'
-__ffmpeg__ = 'ffmpeg-7.0.2'
+__version__ = '2.0.0'
+__ffmpeg__ = 'N-118282-gf651ca3a68'
+__author__= 'John Nathaniel Calvara'
