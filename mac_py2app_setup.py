@@ -13,6 +13,8 @@ else:
     appname = "N8's Video To AVI"
     icon = 'icon.icns'
 
+tcl_tk_version = '8.6.16'
+
 APP = ['main.py']
 OPTIONS = {
     'iconfile': icon, 
@@ -38,12 +40,12 @@ OPTIONS = {
         'PyInstaller', #this is due to the packaging module
         ],
     'frameworks':[
-        '/opt/homebrew/Cellar/tcl-tk/8.6.14/lib/libtk8.6.dylib',
-        '/opt/homebrew/Cellar/tcl-tk/8.6.14/lib/libtcl8.6.dylib',
+        f'/opt/homebrew/Cellar/tcl-tk@8/{tcl_tk_version}/lib/libtk8.6.dylib',
+        f'/opt/homebrew/Cellar/tcl-tk@8/{tcl_tk_version}/lib/libtcl8.6.dylib',
     ],
     'plist': {
         'NSHumanReadableCopyright': 
-            'Copyright © 2024 John Nathaniel Calvara. This software is licensed under the MIT License.',
+            'Copyright © 2024-2025 John Nathaniel Calvara. This software is licensed under the MIT License.',
         'CFBundleIdentifier':
             "dev.n8ventures.N8VideoToAVI",
         'NSAppleScriptEnabled':
@@ -62,7 +64,7 @@ DATA_FILES=[
         './assets/icondev.png',
         './assets/icon_256x256.png'
         ]),
-     ('../lib', ['/opt/homebrew/Cellar/tcl-tk/8.6.14/lib/']),
+     ('../lib', [f'/opt/homebrew/Cellar/tcl-tk@8/{tcl_tk_version}/lib/']),
         ]
 setup(
     app=APP,
